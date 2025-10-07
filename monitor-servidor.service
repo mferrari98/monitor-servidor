@@ -1,0 +1,22 @@
+[Unit]
+Description=Monitor de Servidor - Sistema de Monitoreo de Recursos
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/monitor-servidor
+Environment="PATH=/var/www/monitor-servidor/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/var/www/monitor-servidor/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level info
+
+# Restart policy
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=append:/var/www/monitor-servidor/logs/monitor.log
+StandardError=append:/var/www/monitor-servidor/logs/monitor-error.log
+
+[Install]
+WantedBy=multi-user.target
