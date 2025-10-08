@@ -9,18 +9,28 @@
 </head>
 <body>
     <div class="container">
+        <!-- Toggle dentro del contenedor -->
+        <div class="theme-toggle-fixed">
+            <input type="checkbox" id="theme-checkbox" class="theme-checkbox">
+            <label for="theme-checkbox" class="theme-label">
+                <img src="/monitor/static/img/sun-icon.svg" alt="Modo claro" class="theme-icon sun-icon">
+                <img src="/monitor/static/img/moon-icon.svg" alt="Modo oscuro" class="theme-icon moon-icon">
+                <div class="theme-ball"></div>
+            </label>
+        </div>
+
         <!-- Header -->
         <div class="header">
             <h1>Monitor</h1>
             <div class="header-info">
-                <span id="current-time"></span>
+                <span id="uptime-text">Uptime: -</span> | <span id="current-time"></span>
             </div>
         </div>
 
         <!-- Métricas Principales - Fila horizontal -->
         <div class="metrics-row">
-            <div class="metric-card">
-                <div class="metric-icon">💻</div>
+            <div class="metric-card" id="cpu-card">
+                <div class="metric-icon">⚙️</div>
                 <div class="metric-content">
                     <div class="metric-label">CPU</div>
                     <div class="metric-value" id="cpu-percent">0%</div>
@@ -28,8 +38,8 @@
                 </div>
             </div>
 
-            <div class="metric-card">
-                <div class="metric-icon">🧠</div>
+            <div class="metric-card" id="memory-card">
+                <div class="metric-icon">🔗</div>
                 <div class="metric-content">
                     <div class="metric-label">RAM</div>
                     <div class="metric-value" id="memory-percent">0%</div>
@@ -37,7 +47,7 @@
                 </div>
             </div>
 
-            <div class="metric-card">
+            <div class="metric-card" id="disk-card">
                 <div class="metric-icon">💾</div>
                 <div class="metric-content">
                     <div class="metric-label">Disco</div>
@@ -46,12 +56,12 @@
                 </div>
             </div>
 
-            <div class="metric-card">
-                <div class="metric-icon">⏱️</div>
+            <div class="metric-card" id="swap-card">
+                <div class="metric-icon">💿</div>
                 <div class="metric-content">
-                    <div class="metric-label">Uptime</div>
-                    <div class="metric-value" id="uptime-display">-</div>
-                    <div class="metric-detail" id="hostname-display">-</div>
+                    <div class="metric-label">SWAP</div>
+                    <div class="metric-value" id="swap-percent">0%</div>
+                    <div class="metric-detail" id="swap-detail">0GB / 0GB</div>
                 </div>
             </div>
         </div>
@@ -64,6 +74,9 @@
                     <h3>Uso de CPU</h3>
                 </div>
                 <div class="chart-container">
+                    <div class="chart-spinner" id="cpu-spinner">
+                        <div class="spinner"></div>
+                    </div>
                     <canvas id="cpu-chart"></canvas>
                 </div>
             </div>
@@ -74,6 +87,9 @@
                     <h3>Uso de RAM</h3>
                 </div>
                 <div class="chart-container">
+                    <div class="chart-spinner" id="ram-spinner">
+                        <div class="spinner"></div>
+                    </div>
                     <canvas id="ram-chart"></canvas>
                 </div>
             </div>
@@ -84,6 +100,9 @@
                     <h3>Uso de Red</h3>
                 </div>
                 <div class="chart-container">
+                    <div class="chart-spinner" id="network-spinner">
+                        <div class="spinner"></div>
+                    </div>
                     <canvas id="network-chart"></canvas>
                 </div>
             </div>
@@ -99,7 +118,7 @@
             </div>
 
             <div class="logs-section">
-                <h3>Logs del Sistema</h3>
+                <h3>Eventos</h3>
                 <div class="logs-container" id="logs-container">
                     <!-- Se llenará dinámicamente -->
                 </div>

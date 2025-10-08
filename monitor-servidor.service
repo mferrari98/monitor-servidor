@@ -8,7 +8,7 @@ User=www-data
 Group=www-data
 WorkingDirectory=/var/www/monitor-servidor
 Environment="PATH=/var/www/monitor-servidor/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/var/www/monitor-servidor/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level info
+ExecStart=/var/www/monitor-servidor/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning --no-access-log
 
 # Restart policy
 Restart=always
