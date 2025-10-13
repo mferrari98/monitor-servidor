@@ -13,6 +13,8 @@ Sistema de monitoreo de recursos en tiempo real para servidores Linux con interf
 - **Servicios del sistema**: Estado de servicios críticos (guardias, reportespiolis, dash)
 - **Gráficos interactivos**: Histórico de CPU y distribución de recursos
 - **Actualización automática**: Cada 3 segundos
+- **Modo oscuro/claro**: Interfaz adaptable con persistencia
+- **Favicon unificado**: Icono integrado con el portal de servicios
 
 ## Requisitos
 
@@ -139,6 +141,9 @@ curl http://10.10.9.252/monitor/api/system
 │   ├── static/
 │   │   ├── css/
 │   │   │   └── style.css      # Estilos CSS
+│   │   ├── img/
+│   │   │   ├── favicon.ico    # Favicon del portal
+│   │   │   └── portal-icon.svg # Icono SVG del portal
 │   │   └── js/
 │   │       └── app.js         # JavaScript frontend
 │   └── templates/
