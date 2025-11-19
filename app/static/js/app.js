@@ -357,20 +357,19 @@ function updateServices(services) {
         const serviceItem = document.createElement('div');
         serviceItem.className = 'service-item';
 
+        const serviceStatus = document.createElement('div');
+        serviceStatus.className = 'service-status';
+
+        const statusLed = document.createElement('div');
+        statusLed.className = `status-led ${service.status}`;
+
         const serviceName = document.createElement('div');
         serviceName.className = 'service-name';
         serviceName.textContent = service.name;
 
-        const serviceStatus = document.createElement('div');
-        serviceStatus.className = 'service-status';
-
-        const statusBadge = document.createElement('span');
-        statusBadge.className = `status-badge ${service.status}`;
-        statusBadge.textContent = service.status;
-
-        serviceStatus.appendChild(statusBadge);
-        serviceItem.appendChild(serviceName);
+        serviceStatus.appendChild(statusLed);
         serviceItem.appendChild(serviceStatus);
+        serviceItem.appendChild(serviceName);
         servicesList.appendChild(serviceItem);
     });
 }

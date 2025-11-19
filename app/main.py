@@ -272,12 +272,13 @@ async def get_system_logs():
                     if line.strip():
                         logs.append(line.strip())
 
+        # Si no hay logs, mostrar mensaje genérico sin timestamp
         if not logs:
-            logs.append(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} [INFO] SYSTEM - Monitor iniciado correctamente")
+            logs.append("[INFO] SYSTEM - Sin eventos registrados")
 
         return {"logs": logs}
     except Exception as e:
-        return {"logs": [f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - ERROR - Error al obtener logs: {str(e)}"]}
+        return {"logs": [f"[ERROR] SYSTEM - Error al obtener logs: {str(e)}"]}
 
 
 @app.get("/api/all")
@@ -313,6 +314,29 @@ async def get_all_data():
         }
 
 
+def rotate_log_if_needed(log_file, max_size_mb=5):
+    """
+    Rotar el archivo de log si supera el tamaño máximo.
+    Mantiene solo las últimas 100 líneas.
+    """
+    try:
+        if os.path.exists(log_file):
+            # Verificar tamaño del archivo
+            size_mb = os.path.getsize(log_file) / (1024 * 1024)
+            if size_mb > max_size_mb:
+                # Leer últimas 100 líneas
+                with open(log_file, 'r') as f:
+                    lines = f.readlines()
+                    last_lines = lines[-100:] if len(lines) > 100 else lines
+
+                # Escribir de nuevo con solo las últimas líneas
+                with open(log_file, 'w') as f:
+                    f.writelines(last_lines)
+                    f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} [INFO] SYSTEM - Log rotado automáticamente (tamaño: {size_mb:.2f}MB)\n")
+    except Exception as e:
+        print(f"Error al rotar log: {e}")
+
+
 @app.post("/api/log-alerts")
 async def log_alerts(request: Request):
     """Registrar alertas en archivo de log"""
@@ -329,6 +353,9 @@ async def log_alerts(request: Request):
 
         # Archivo de log de alertas
         log_file = os.path.join(log_dir, "alerts.log")
+
+        # Rotar log si es necesario (máximo 5MB)
+        rotate_log_if_needed(log_file, max_size_mb=5)
 
         # Leer alertas existentes de la última hora para evitar spam
         now = datetime.now()
@@ -359,9 +386,10 @@ async def log_alerts(request: Request):
                 log_entry = f"{timestamp} [{level}] {alert_type} - {message}: {value} (umbral: {threshold})"
                 alert_key = f"[{level}]{alert_type}"
 
-                # Escribir siempre (eliminamos el filtro de duplicados para debugging)
-                f.write(log_entry + "\n")
-                f.flush()  # Asegurar que se escriba inmediatamente
+                # Solo escribir si no está en los recientes (evitar duplicados)
+                if alert_key not in recent_alerts:
+                    f.write(log_entry + "\n")
+                    f.flush()  # Asegurar que se escriba inmediatamente
 
         return {"status": "ok", "logged": len(alerts)}
     except Exception as e:
@@ -408,8 +436,6 @@ async def collect_metrics_background():
     # Inicializar psutil.cpu_percent() para que funcione correctamente
     psutil.cpu_percent(interval=None)
     await asyncio.sleep(0.5)
-
-    print("Monitor iniciado correctamente - Sistema de snapshots cada 5 segundos activo")
 
     # Contador para saber cuándo generar snapshot completo
     snapshot_counter = 0
@@ -498,7 +524,9 @@ async def collect_metrics_background():
 
                     # Actualizar caché con timestamp
                     metrics_cache.update_cache(cached_data)
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Snapshot generado - CPU: {averages['cpu']:.1f}%, MEM: {averages['memory']:.1f}%")
+                    # Log reducido - solo cada 60 segundos (cada 12 snapshots)
+                    if metrics_cache.total_snapshots % 12 == 0:
+                        print(f"[{datetime.now().strftime('%H:%M:%S')}] Monitor activo - CPU: {averages['cpu']:.1f}%, MEM: {averages['memory']:.1f}%")
 
         except Exception as e:
             print(f"Error en recopilación de métricas: {e}")
@@ -510,4 +538,17 @@ async def collect_metrics_background():
 @app.on_event("startup")
 async def startup_event():
     """Iniciar tarea en segundo plano al arrancar la aplicación"""
+    # Escribir mensaje de inicio en el log de alertas (una sola vez)
+    try:
+        log_dir = "/var/www/monitor-servidor/logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "alerts.log")
+
+        # Escribir mensaje con la hora de inicio
+        startup_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        with open(log_file, 'a') as f:
+            f.write(f"{startup_time} [INFO] SYSTEM - Monitor iniciado correctamente\n")
+    except Exception as e:
+        print(f"Error al escribir mensaje de inicio: {e}")
+
     asyncio.create_task(collect_metrics_background())

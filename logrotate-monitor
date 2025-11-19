@@ -1,0 +1,23 @@
+/var/www/monitor-servidor/logs/*.log {
+    # Rotar diariamente
+    daily
+    # Mantener solo 7 días de logs (máximo)
+    rotate 7
+    # Comprimir logs antiguos
+    compress
+    # No comprimir el más reciente
+    delaycompress
+    # No dar error si el log no existe
+    missingok
+    # No rotar si está vacío
+    notifempty
+    # Crear nuevo archivo con estos permisos
+    create 0640 www-data www-data
+    # Script para ejecutar después de rotar
+    postrotate
+        # Reiniciar el servicio si está corriendo
+        systemctl is-active monitor-servidor > /dev/null 2>&1 && systemctl reload monitor-servidor > /dev/null 2>&1 || true
+    endscript
+    # Limitar tamaño máximo a 10MB - rotar si supera este tamaño aunque no sea diario
+    size 10M
+}
